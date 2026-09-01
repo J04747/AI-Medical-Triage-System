@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev App - Core Chat</title>
+    <!-- 1. Upgrade Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- 3. Form Elements (Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../CSS/style.css">
+</head>
+
+<body>
+    <!-- 2. Depth & Background -->
+    <div class="bg-gradient"></div>
+    <div class="container chat-container">
+        <h1>AI Assistant</h1>
+
+        <div class="chat-box">
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message llm">
+                    Hello! I'm your AI assistant. The LLM port is ready. How can I help you today?
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
+                <button class="btn btn-send" id="sendBtn">
+                    <i class="ph ph-paper-plane-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const chatMessages = document.getElementById("chatMessages");
+            const chatInput = document.getElementById("chatInput");
+            const sendBtn = document.getElementById("sendBtn");
+
+            // Display user data collected from previous steps
+            const displayUserData = () => {
+                const storedData = localStorage.getItem("finalDataArray");
+                if (storedData) {
+                    const dataArray = JSON.parse(storedData);
+                    
+                    const formattedData = `<ul style="margin: 0; padding-left: 20px;">
+                        <li><strong>ID:</strong> ${dataArray[0]}</li>
+                        <li><strong>Name:</strong> ${dataArray[1]}</li>
+                        <li><strong>Age:</strong> ${dataArray[2]}</li>
+                        <li><strong>Gender:</strong> ${dataArray[3]}</li>
+                        <li><strong>Location:</strong> ${dataArray[4]}</li>
+                        <li><strong>Source:</strong> ${dataArray[5]}</li>
+                    </ul>`;
+                    
+                    const msgDiv = document.createElement("div");
+                    msgDiv.className = `chat-message llm`;
+                    msgDiv.innerHTML = `<strong>User Data Profile:</strong><br>${formattedData}`;
+                    chatMessages.appendChild(msgDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+                }
+            };
+            
+            // Call to display the data when loaded
+            displayUserData();
+
+            // Utility to add a message to the UI
+            const appendMessage = (text, sender) => {
+                const msgDiv = document.createElement("div");
+                msgDiv.className = `chat-message ${sender}`;
+                msgDiv.textContent = text;
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+            };
+
+            // Utility to add a typing indicator
+            const showTypingIndicator = () => {
+                const indicatorDiv = document.createElement("div");
+                indicatorDiv.className = "chat-message llm typing";
+                indicatorDiv.id = "typingIndicator";
+                indicatorDiv.innerHTML = `
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                `;
+                chatMessages.appendChild(indicatorDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            // Remove typing indicator
+            const removeTypingIndicator = () => {
+                const indicator = document.getElementById("typingIndicator");
+                if (indicator) indicator.remove();
+            };
+
+            // PORT FOR LLM: Function to handle sending message to LLM
+            const sendToLLM = async (userMessage) => {
+                showTypingIndicator();
+
+                // --- FUTURE LLM PORT ---
+                // Here you will add your fetch() or WebSocket call to the actual LLM model
+                /*
+                try {
+                    const response = await fetch('YOUR_LLM_API_ENDPOINT', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: userMessage })
+                    });
+                    const data = await response.json();
+                    removeTypingIndicator();
+                    appendMessage(data.reply, "llm");
+                } catch(error) {
+                    removeTypingIndicator();
+                    appendMessage("Sorry, I encountered an error connecting to the AI.", "llm");
+                }
+                */
+
+                // Mock response for now (simulate network delay)
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    appendMessage("I received: '" + userMessage + "'. (This is a mocked response from the LLM port)", "llm");
+                }, 1500);
+            };
+
+            // Handle send action
+            const handleSend = () => {
+                const text = chatInput.value.trim();
+                if (!text) return;
+
+                appendMessage(text, "user");
+                chatInput.value = ""; // Clear input
+
+                // Send to the LLM port
+                sendToLLM(text);
+            };
+
+            // Event listeners
+            sendBtn.addEventListener("click", handleSend);
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    handleSend();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

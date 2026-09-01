@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev App - Source</title>
+    <!-- 1. Upgrade Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- 3. Form Elements (Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../CSS/style.css">
+</head>
+
+<body>
+    <!-- 2. Depth & Background -->
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <h1>Source</h1>
+        <form id="sourceForm">
+            <!-- 3. Floating labels and icons -->
+            <div class="form-group floating">
+                <!-- 5. Modernize Select Dropdown -->
+                <select id="fromWhere" required>
+                    <option value="" disabled selected></option>
+                    <option value="Google">Google</option>
+                    <option value="Twitter">Twitter / X</option>
+                    <option value="GitHub">GitHub</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Other">Other</option>
+                </select>
+                <label for="fromWhere">Where did you come from?</label>
+                <i class="ph ph-globe icon-left"></i>
+                <i class="ph ph-caret-down select-arrow"></i>
+                <div class="error-message" id="sourceError">Please select an option or skip</div>
+            </div>
+            <div class="action-buttons">
+                <button type="button" class="btn" id="successBtn">Complete</button>
+                <button type="button" class="btn btn-secondary" id="skipBtn">Skip</button>
+            </div>
+        </form>
+    </div>
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

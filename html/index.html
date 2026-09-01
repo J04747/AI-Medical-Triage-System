@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev App - Sign Up</title>
+    <!-- 1. Upgrade Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- 3. Form Elements (Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../CSS/style.css">
+</head>
+
+<body>
+    <!-- 2. Depth & Background -->
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <h1>Sign Up</h1>
+        <form id="signupForm">
+            <!-- 3. Floating labels and icons -->
+            <div class="form-group floating">
+                <input type="text" id="id" placeholder=" ">
+                <label for="id">ID</label>
+                <i class="ph ph-identification-card icon-left"></i>
+                <div class="error-message" id="idError">ID is required</div>
+            </div>
+            <div class="form-group floating">
+                <input type="text" id="name" placeholder=" ">
+                <label for="name">Name</label>
+                <i class="ph ph-user icon-left"></i>
+                <div class="error-message" id="nameError">Name is required</div>
+            </div>
+            <div class="form-group floating">
+                <input type="number" id="age" placeholder=" ">
+                <label for="age">Age</label>
+                <i class="ph ph-calendar-blank icon-left"></i>
+                <div class="error-message" id="ageError">Valid Age is required</div>
+            </div>
+            <div class="form-group floating">
+                <!-- 5. Modernize Select Dropdown -->
+                <select id="gender" required>
+                    <option value="" disabled selected></option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <label for="gender">Gender</label>
+                <i class="ph ph-gender-intersex icon-left"></i>
+                <i class="ph ph-caret-down select-arrow"></i>
+                <div class="error-message" id="genderError">Gender is required</div>
+            </div>
+            <div class="form-group floating">
+                <input type="text" id="location" placeholder=" ">
+                <label for="location">Location</label>
+                <i class="ph ph-map-pin icon-left"></i>
+                <div class="error-message" id="locationError">Location is required</div>
+            </div>
+            <button type="button" class="btn" id="nextBtn">Next -></button>
+        </form>
+    </div>
+    <script src="../js/script.js"></script>
+</body>
+
+</html>
