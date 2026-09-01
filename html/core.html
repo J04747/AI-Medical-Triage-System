@@ -121,7 +121,23 @@
                 // Mock response for now (simulate network delay)
                 setTimeout(() => {
                     removeTypingIndicator();
-                    appendMessage("I received: '" + userMessage + "'. (This is a mocked response from the LLM port)", "llm");
+                    
+                    // Mocking the LLM's response. (Type 'done' to simulate the LLM calling the RequestSignUp tool)
+                    let mockResponse = "I received: '" + userMessage + "'. (This is a mocked response from the LLM port)";
+                    if (userMessage.toLowerCase().includes("done")) {
+                        mockResponse = "[ACTION_REQUIRED: SIGNUP]";
+                    }
+
+                    if (mockResponse.includes("[ACTION_REQUIRED: SIGNUP]")) {
+                        const msgDiv = document.createElement("div");
+                        msgDiv.className = "chat-message llm";
+                        msgDiv.innerHTML = `I have collected enough information to assess your risk level. Would you like to sign up for further medical assistance?<br><br>
+                                          <button onclick="window.location.href='index.html'" style="background-color: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-top: 10px; font-family: 'Inter', sans-serif;">Sign Up Now</button>`;
+                        chatMessages.appendChild(msgDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        appendMessage(mockResponse, "llm");
+                    }
                 }, 1500);
             };
 

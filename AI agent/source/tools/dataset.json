@@ -1,0 +1,17 @@
+{
+    "stomach pain": {
+        "case_count": 3,
+        "recent_cases": [
+            "0a0e6632-a553-42f1-b577-1be1bf5a8ba2",
+            "4ce384cd-63f0-4694-b7ba-c1f667cafca8",
+            "55141ffa-3613-4d45-9b45-c867414370ff"
+        ]
+    },
+    "chest pain": {
+        "case_count": 2,
+        "recent_cases": [
+            "47461955-e5ba-4297-a22f-1b4d6cb52505",
+            "2590d206-52c9-47d0-a1a5-b750021b3ef9"
+        ]
+    }
+}
