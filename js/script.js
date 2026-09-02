@@ -24,6 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Page 1: Sign up logic
     const nextBtn = document.getElementById("nextBtn");
     if (nextBtn) {
+        // Read chatId from URL and save it to localStorage if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chatid');
+        if (chatId) {
+            localStorage.setItem('chatId', chatId);
+        }
+
         nextBtn.addEventListener("click", () => {
             const id = document.getElementById("id").value.trim();
             const name = document.getElementById("name").value.trim();
@@ -59,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const successBtn = document.getElementById("successBtn");
     const skipBtn = document.getElementById("skipBtn");
 
-    const completeForm = (fromWhere) => {
+    const completeForm = async (fromWhere) => {
         const storedData = localStorage.getItem("userData");
         let userData = storedData ? JSON.parse(storedData) : {};
         
@@ -77,11 +84,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
         console.log("Final Data Array:", dataArray);
         
+        // Get chatId if it exists
+        const chatId = localStorage.getItem('chatId');
+
+        // Prepare data for backend
+        const payload = {
+            userid: userData.ID || crypto.randomUUID(),
+            name: userData.Name || "",
+            age: userData.Age || "",
+            gender: userData.Gender || "",
+            location: userData.Location || "",
+            "where it come from": fromWhere
+        };
+
+        if (chatId) {
+            payload.chatid = chatId;
+        }
+
+        // Send to backend
+        try {
+            const response = await fetch('http://localhost:8000/api/save_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                console.error("Failed to save user data to server.");
+            }
+        } catch (error) {
+            console.error("Error communicating with the server:", error);
+        }
+        
         // Save the data to localStorage so core.html can access it
         localStorage.setItem("finalDataArray", JSON.stringify(dataArray));
         localStorage.setItem("userData", JSON.stringify(userData));
         
-        // Jump to core page
+        // Redirect to core.html
         window.location.href = "core.html";
     };
 

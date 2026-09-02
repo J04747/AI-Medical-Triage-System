@@ -9,7 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- 3. Form Elements (Icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="../CSS/style.css">
+    <style>
+        .chat-message.llm p:first-child,
+        .chat-message.llm ul:first-child,
+        .chat-message.llm ol:first-child {
+            margin-top: 0;
+        }
+
+        .chat-message.llm p:last-child,
+        .chat-message.llm ul:last-child,
+        .chat-message.llm ol:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-message.llm li {
+            margin-bottom: 4px;
+        }
+    </style>
 </head>
 
 <body>
@@ -41,37 +59,15 @@
             const chatInput = document.getElementById("chatInput");
             const sendBtn = document.getElementById("sendBtn");
 
-            // Display user data collected from previous steps
-            const displayUserData = () => {
-                const storedData = localStorage.getItem("finalDataArray");
-                if (storedData) {
-                    const dataArray = JSON.parse(storedData);
-                    
-                    const formattedData = `<ul style="margin: 0; padding-left: 20px;">
-                        <li><strong>ID:</strong> ${dataArray[0]}</li>
-                        <li><strong>Name:</strong> ${dataArray[1]}</li>
-                        <li><strong>Age:</strong> ${dataArray[2]}</li>
-                        <li><strong>Gender:</strong> ${dataArray[3]}</li>
-                        <li><strong>Location:</strong> ${dataArray[4]}</li>
-                        <li><strong>Source:</strong> ${dataArray[5]}</li>
-                    </ul>`;
-                    
-                    const msgDiv = document.createElement("div");
-                    msgDiv.className = `chat-message llm`;
-                    msgDiv.innerHTML = `<strong>User Data Profile:</strong><br>${formattedData}`;
-                    chatMessages.appendChild(msgDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
-                }
-            };
-            
-            // Call to display the data when loaded
-            displayUserData();
-
             // Utility to add a message to the UI
             const appendMessage = (text, sender) => {
                 const msgDiv = document.createElement("div");
                 msgDiv.className = `chat-message ${sender}`;
-                msgDiv.textContent = text;
+                if (sender === "llm") {
+                    msgDiv.innerHTML = marked.parse(text);
+                } else {
+                    msgDiv.textContent = text;
+                }
                 chatMessages.appendChild(msgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
             };
@@ -96,49 +92,48 @@
                 if (indicator) indicator.remove();
             };
 
+            // Generate or retrieve a session ID
+            let sessionId = localStorage.getItem('chatId');
+            if (!sessionId) {
+                sessionId = crypto.randomUUID();
+                localStorage.setItem('chatId', sessionId);
+            }
+
             // PORT FOR LLM: Function to handle sending message to LLM
             const sendToLLM = async (userMessage) => {
                 showTypingIndicator();
 
-                // --- FUTURE LLM PORT ---
-                // Here you will add your fetch() or WebSocket call to the actual LLM model
-                /*
+                // 120 second timeout for AI responses (tool-calling chains can be slow)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000);
+
                 try {
-                    const response = await fetch('YOUR_LLM_API_ENDPOINT', {
+                    const response = await fetch('http://localhost:8000/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: userMessage })
+                        body: JSON.stringify({ message: userMessage, session_id: sessionId }),
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
                     const data = await response.json();
                     removeTypingIndicator();
-                    appendMessage(data.reply, "llm");
-                } catch(error) {
-                    removeTypingIndicator();
-                    appendMessage("Sorry, I encountered an error connecting to the AI.", "llm");
-                }
-                */
 
-                // Mock response for now (simulate network delay)
-                setTimeout(() => {
-                    removeTypingIndicator();
-                    
-                    // Mocking the LLM's response. (Type 'done' to simulate the LLM calling the RequestSignUp tool)
-                    let mockResponse = "I received: '" + userMessage + "'. (This is a mocked response from the LLM port)";
-                    if (userMessage.toLowerCase().includes("done")) {
-                        mockResponse = "[ACTION_REQUIRED: SIGNUP]";
-                    }
+                    let aiResponse = data.reply || data.error || "No response received.";
 
-                    if (mockResponse.includes("[ACTION_REQUIRED: SIGNUP]")) {
-                        const msgDiv = document.createElement("div");
-                        msgDiv.className = "chat-message llm";
-                        msgDiv.innerHTML = `I have collected enough information to assess your risk level. Would you like to sign up for further medical assistance?<br><br>
-                                          <button onclick="window.location.href='index.html'" style="background-color: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-top: 10px; font-family: 'Inter', sans-serif;">Sign Up Now</button>`;
-                        chatMessages.appendChild(msgDiv);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (aiResponse.includes("Redirected user to signup page") || aiResponse.includes("[ACTION_REQUIRED: SIGNUP]")) {
+                        window.location.href = `index.html?chatid=${sessionId}`;
                     } else {
-                        appendMessage(mockResponse, "llm");
+                        appendMessage(aiResponse, "llm");
                     }
-                }, 1500);
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    removeTypingIndicator();
+                    if (error.name === 'AbortError') {
+                        appendMessage("The request timed out. The AI is taking longer than expected. Please try again.", "llm");
+                    } else {
+                        appendMessage("Sorry, I encountered an error connecting to the AI server. Is the backend running?", "llm");
+                    }
+                }
             };
 
             // Handle send action
@@ -149,8 +144,16 @@
                 appendMessage(text, "user");
                 chatInput.value = ""; // Clear input
 
+                // Disable input while waiting to prevent multiple requests
+                chatInput.disabled = true;
+                sendBtn.disabled = true;
+
                 // Send to the LLM port
-                sendToLLM(text);
+                sendToLLM(text).finally(() => {
+                    chatInput.disabled = false;
+                    sendBtn.disabled = false;
+                    chatInput.focus();
+                });
             };
 
             // Event listeners

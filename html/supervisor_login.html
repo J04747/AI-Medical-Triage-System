@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        .login-container h1 {
+            margin-bottom: 5px;
+        }
+        .login-container p {
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #334155;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .back-link {
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: center;
+        }
+        .back-link:hover {
+            color: #334155;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <div class="login-container">
+            <h1>Supervisor Login</h1>
+            <p>Enter your credentials to access the portal</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="accountId">Account ID</label>
+                    <input type="text" id="accountId" class="form-control" required placeholder="Enter account ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required placeholder="Enter password">
+                </div>
+                
+                <div id="errorMessage" class="error-message">Invalid Account ID or Password.</div>
+                
+                <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">
+                    <i class="ph ph-sign-in" style="margin-right: 8px;"></i> Login
+                </button>
+            </form>
+            
+            <a href="begin.html" class="back-link">
+                <i class="ph ph-arrow-left"></i> Back to options
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const accountId = document.getElementById('accountId').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (accountId === 'abc' && password === 'abc123') {
+                errorMsg.style.display = 'none';
+                window.location.href = 'supervisor_dashboard.html';
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

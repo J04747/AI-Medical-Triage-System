@@ -1,5 +1,5 @@
 import json
-from tools.tool import CreateFile, ReadFile, WriteFile, DeleteFile, SearchCases, RequestSignUp
+from tools.tool import CreateFile, ReadFile, WriteFile, DeleteFile, SearchCases, ProcessSignUp
 
 # Define the tools (JSON Schema) for the Groq API
 tools = [
@@ -103,14 +103,18 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "RequestSignUp",
-            "description": "Call this tool when you have gathered enough symptom information and assessed the risk, in order to ask the user to create an account for further medical assistance. This will prompt the UI to show a signup button.",
+            "name": "ProcessSignUp",
+            "description": "Handles the sign-up process. Call this tool when the user wants to create an account, or when they provide a user_id to link an existing account.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "chat_id": {
                         "type": "string",
                         "description": "The unique identifier for the chat session."
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "description": "The user's ID to link this chat to (if they already have an account). Optional."
                     }
                 },
                 "required": ["chat_id"]
@@ -132,6 +136,6 @@ def execute_function(function_name, arguments):
         return DeleteFile(args["chat_id"])
     elif function_name == "SearchCases":
         return SearchCases(args["symptom"])
-    elif function_name == "RequestSignUp":
-        return RequestSignUp(args["chat_id"])
+    elif function_name == "ProcessSignUp":
+        return ProcessSignUp(args["chat_id"], args.get("user_id"))
     return "Function not found."

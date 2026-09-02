@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Helper - Welcome</title>
+    <!-- Upgrade Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Form Elements (Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <style>
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .welcome-container h1 {
+            margin-bottom: 5px;
+        }
+
+        .welcome-container p {
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Custom style for supervisor button */
+        .btn-supervisor {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+            box-shadow: none;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-supervisor:hover {
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Depth & Background -->
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <div class="welcome-container">
+            <h1>Welcome</h1>
+            <p>Please select an option to continue</p>
+
+            <div class="btn-group">
+
+                <button type="button" class="btn btn-secondary" id="btnChatAssistant">
+                    <i class="ph ph-chat-circle-dots" style="margin-right: 8px;"></i> Chat with Assistant
+                </button>
+
+                <button type="button" class="btn btn-supervisor" id="btnSupervisor">
+                    <i class="ph ph-shield-check" style="margin-right: 8px;"></i> Supervisor Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Chat with Assistant Button
+        // Function: open chat, demo user sending msg to LLM first to create dataset (prevents chat jumping)
+        document.getElementById('btnChatAssistant').addEventListener('click', async function () {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner-gap" style="margin-right: 8px; animation: spin 1s linear infinite;"></i> Preparing Chat...';
+            btn.disabled = true;
+
+            try {
+                let sessionId = localStorage.getItem('chatId');
+                if (!sessionId) {
+                    sessionId = crypto.randomUUID();
+                    localStorage.setItem('chatId', sessionId);
+                }
+
+                // Send initial hidden message to LLM to setup dataset without user seeing jumping
+                await fetch('http://localhost:8000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: "open the chat", session_id: sessionId })
+                });
+
+                // Once dataset is created, jump to the chat page
+                window.location.href = 'core.html';
+            } catch (error) {
+                console.error("Error connecting to LLM backend:", error);
+                alert("Failed to reach the AI server. Is the backend running?");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Add a small spin animation for the loading icon
+        const style = document.createElement('style');
+        style.innerHTML = '@keyframes spin { 100% { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+
+        // 3. Supervisor Account Button
+        // Function: keep one port for supervisor account (different function)
+        document.getElementById('btnSupervisor').addEventListener('click', function () {
+            console.log('Action: Entering supervisor mode...');
+            window.location.href = 'supervisor_login.html';
+        });
+    </script>
+</body>
+
+</html>

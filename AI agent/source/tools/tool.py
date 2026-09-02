@@ -1,5 +1,6 @@
 import json
 import os
+import webbrowser
 
 # Directory to store session files
 SESSIONS_DIR = os.path.join(os.path.dirname(__file__), 'sessions')
@@ -109,9 +110,36 @@ def SearchCases(symptom: str) -> str:
 
     return f"No cases found for symptom '{symptom}'."
 
-def RequestSignUp(chat_id: str) -> str:
+def ProcessSignUp(chat_id: str, user_id: str = None) -> str:
     """
-    Called when the AI agent feels it has collected enough information and the risk level is assessed, 
-    requesting the user to sign up for further medical assistance.
+    Handles the entire sign-up and linking process. 
+    If the user wants to create an account, it opens the sign-up page and requests action.
+    If the user already has an account and provides a user_id, it links the account.
     """
-    return "[ACTION_REQUIRED: SIGNUP]"
+    result = ""
+    # 1. Open signup page if no user_id is provided
+    if not user_id:
+        from pathlib import Path
+        import webbrowser
+        html_path = Path(__file__).resolve().parent.parent.parent.parent / 'html' / 'index.html'
+        url = f"{html_path.as_uri()}?chatid={chat_id}"
+        webbrowser.open(url)
+        result += f"[ACTION_REQUIRED: SIGNUP]\nRedirected user to signup page with chat_id {chat_id}."
+    
+    # 2. Link account if user_id is provided
+    if user_id:
+        import urllib.request
+        import json
+        url = "http://localhost:8000/api/link_chat"
+        data = {"userid": user_id, "chatid": chat_id}
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={'Content-Type': 'application/json'}, method='POST')
+        try:
+            with urllib.request.urlopen(req) as response:
+                res = json.loads(response.read().decode('utf-8'))
+                link_msg = f"Successfully linked chat {chat_id} to user {user_id}. Total chats linked: {len(res.get('chat_ids', []))}"
+                result += f"\n{link_msg}" if result else link_msg
+        except Exception as e:
+            err_msg = f"Error linking account: {str(e)}"
+            result += f"\n{err_msg}" if result else err_msg
+            
+    return result

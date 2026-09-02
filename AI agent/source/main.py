@@ -17,7 +17,6 @@ session_id = str(uuid.uuid4())
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding='utf-8')
     print("Welcome to the AI Agent Test!")
-    
     while True:
         user_input = input("\nUser: ")
         
