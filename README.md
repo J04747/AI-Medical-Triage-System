@@ -1,5 +1,5 @@
 
-# Medical Helper
+# AI Medical Triage System
 
 Medical Helper is an AI-powered medical assistant application that provides users with an intelligent chat interface to discuss their symptoms. It also includes a comprehensive supervisor dashboard for medical professionals to monitor user sessions, symptoms, and assigned risk levels.
 
