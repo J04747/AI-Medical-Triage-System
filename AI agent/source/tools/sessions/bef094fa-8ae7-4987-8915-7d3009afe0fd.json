@@ -1,6 +1,6 @@
 {
     "chat_id": "bef094fa-8ae7-4987-8915-7d3009afe0fd",
-    "sympton": "???",
-    "risk_level": "",
-    "detail": ""
+    "sympton": "chest pain",
+    "risk_level": "high",
+    "detail": "Duration: 1 day. Intensity: 10/10. Quality: sharp. No additional details yet."
 }

@@ -80,24 +80,39 @@
             btn.disabled = true;
 
             try {
-                let sessionId = localStorage.getItem('chatId');
-                if (!sessionId) {
-                    sessionId = crypto.randomUUID();
-                    localStorage.setItem('chatId', sessionId);
-                }
+                // Always create a new session for each chat conversation
+                const sessionId = crypto.randomUUID();
+                localStorage.setItem('chatId', sessionId);
 
-                // Send initial hidden message to LLM to setup dataset without user seeing jumping
-                await fetch('http://localhost:8000/api/chat', {
+                // Fire the init message in the background (don't await — AI can be slow)
+                // The session will be initialized by the time the user types their first message
+                fetch('http://localhost:8000/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: "open the chat", session_id: sessionId })
-                });
+                }).catch(e => console.error("Background init error:", e));
 
-                // Once dataset is created, jump to the chat page
+                // Link the chat to the user's profile (also background, non-blocking)
+                const storedData = localStorage.getItem("userData");
+                if (storedData) {
+                    try {
+                        const userData = JSON.parse(storedData);
+                        if (userData.ID) {
+                            fetch('http://localhost:8000/api/link_chat', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userid: userData.ID, chatid: sessionId })
+                            }).catch(e => console.error("Background link error:", e));
+                        }
+                    } catch (e) {
+                        console.error("Error parsing userData:", e);
+                    }
+                }
+
+                // Navigate immediately — don't wait for AI to finish
                 window.location.href = 'core.html';
             } catch (error) {
-                console.error("Error connecting to LLM backend:", error);
-                alert("Failed to reach the AI server. Is the backend running?");
+                console.error("Error setting up chat:", error);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }

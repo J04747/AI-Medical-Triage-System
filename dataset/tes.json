@@ -1,0 +1,12 @@
+{
+    "userid": "tes",
+    "name": "test",
+    "age": "67",
+    "gender": "Male",
+    "location": "test",
+    "where it come from": "GitHub",
+    "chat_ids": [
+        "acf6de86-d4cc-432c-a955-ead28a8c8609",
+        "738ec0df-26a8-4f02-a8ba-79c4767c9958"
+    ]
+}

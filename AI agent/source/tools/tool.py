@@ -24,15 +24,29 @@ def get_file_path(chat_id: str) -> str:
 
 def CreateFile(chat_id: str) -> str:
     """
-    Generate a new file named <chat_id>.json and initialize it.
+    Generate a new file named <chat_id>.json and initialize it, preserving any existing context.
     """
     file_path = get_file_path(chat_id)
+    
+    existing_context = None
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            try:
+                existing_data = json.load(f)
+                existing_context = existing_data.get('context')
+            except json.JSONDecodeError:
+                pass
+                
     data = {
         "chat_id": chat_id,
         "sympton": "???",
         "risk_level": "",
         "detail": ""
     }
+    
+    if existing_context:
+        data["context"] = existing_context
+        
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
     return f"Created {chat_id}.json successfully."

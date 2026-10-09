@@ -120,7 +120,22 @@ document.addEventListener("DOMContentLoaded", () => {
         // Save the data to localStorage so core.html can access it
         localStorage.setItem("finalDataArray", JSON.stringify(dataArray));
         localStorage.setItem("userData", JSON.stringify(userData));
-        
+
+        // Generate a new chat session for the post-signup chat
+        const newChatId = crypto.randomUUID();
+        localStorage.setItem('chatId', newChatId);
+
+        // Link the new chat to the user's profile
+        try {
+            await fetch('http://localhost:8000/api/link_chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userid: payload.userid, chatid: newChatId })
+            });
+        } catch (e) {
+            console.error("Error linking new chat:", e);
+        }
+
         // Redirect to core.html
         window.location.href = "core.html";
     };

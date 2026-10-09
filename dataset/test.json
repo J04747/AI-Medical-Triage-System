@@ -2,11 +2,16 @@
     "userid": "test",
     "name": "test",
     "age": "12",
-    "gender": "Female",
+    "gender": "Male",
     "location": "test",
-    "where it come from": "Twitter",
+    "where it come from": "Google",
     "chat_ids": [
         "996b4b2b-be67-4a5e-b429-24dd494dc95a",
-        "bef094fa-8ae7-4987-8915-7d3009afe0fd"
+        "bef094fa-8ae7-4987-8915-7d3009afe0fd",
+        "fafbc11c-56fd-4427-b6a0-fd7b38bd22bd",
+        "d43baa53-1f7d-4038-afad-3ca947c14c3b",
+        "bd555194-cd48-40d5-965a-ba1b98d48be5",
+        "ce254fb5-9a81-47c5-ad95-2f98e3bdf00b",
+        "093da45f-e446-4a6a-8ed4-ba26dcad468e"
     ]
 }
