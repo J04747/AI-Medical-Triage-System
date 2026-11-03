@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import webbrowser
+from pathlib import Path
 
 # Directory to store session files
 SESSIONS_DIR = os.path.join(os.path.dirname(__file__), 'sessions')
@@ -19,8 +21,19 @@ def save_dataset(data: dict):
         json.dump(data, f, indent=4)
 
 def get_file_path(chat_id: str) -> str:
-    """Helper to get the full file path for a given chat_id."""
-    return os.path.join(SESSIONS_DIR, f"{chat_id}.json")
+    """Return a session path, rejecting unsafe IDs and paths outside storage."""
+    if not isinstance(chat_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", chat_id):
+        raise ValueError("Invalid chat ID.")
+
+    # Windows device names remain reserved even with a .json extension.
+    if chat_id.upper() in {"CON", "PRN", "AUX", "NUL", *[f"COM{i}" for i in range(1, 10)], *[f"LPT{i}" for i in range(1, 10)]}:
+        raise ValueError("Invalid chat ID.")
+
+    sessions_dir = Path(SESSIONS_DIR).resolve()
+    file_path = (sessions_dir / f"{chat_id}.json").resolve()
+    if file_path.parent != sessions_dir:
+        raise ValueError("Session path is outside the sessions directory.")
+    return str(file_path)
 
 def CreateFile(chat_id: str) -> str:
     """

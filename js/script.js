@@ -66,80 +66,60 @@ document.addEventListener("DOMContentLoaded", () => {
     const successBtn = document.getElementById("successBtn");
     const skipBtn = document.getElementById("skipBtn");
 
+    let saving = false;
     const completeForm = async (fromWhere) => {
-        const storedData = localStorage.getItem("userData");
-        let userData = storedData ? JSON.parse(storedData) : {};
-        
-        userData["From Where"] = fromWhere;
-        
-        // Final structure: ["ID", "Name", "Age", "Gender", "Location", "From Where"]
-        const dataArray = [
-            userData.ID || "N/A", 
-            userData.Name || "N/A", 
-            userData.Age || "N/A", 
-            userData.Gender || "N/A", 
-            userData.Location || "N/A", 
-            userData["From Where"]
-        ];
-
-        console.log("Final Data Array:", dataArray);
-        
-        // Get chatId if it exists
-        const chatId = localStorage.getItem('chatId');
-
-        // Prepare data for backend
-        const payload = {
-            userid: userData.ID || crypto.randomUUID(),
-            name: userData.Name || "",
-            age: userData.Age || "",
-            gender: userData.Gender || "",
-            location: userData.Location || "",
-            "where it come from": fromWhere
-        };
-
-        if (chatId) {
-            payload.chatid = chatId;
+        if (saving) return;
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        if (!userData.ID || !userData.Name || !userData.Age || !userData.Gender || !userData.Location) {
+            window.location.href = "index.html";
+            return;
         }
-
-        // Send to backend
+        const chatId = localStorage.getItem('chatId') || crypto.randomUUID();
+        localStorage.setItem('chatId', chatId);
+        saving = true;
+        successBtn.disabled = true;
+        skipBtn.disabled = true;
+        let errorEl = document.getElementById('saveError');
+        if (!errorEl) {
+            errorEl = document.createElement('p');
+            errorEl.id = 'saveError';
+            errorEl.setAttribute('role', 'alert');
+            document.getElementById('sourceForm').appendChild(errorEl);
+        }
+        errorEl.textContent = '';
         try {
             const response = await fetch('http://localhost:8000/api/save_user', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                console.error("Failed to save user data to server.");
-            }
-        } catch (error) {
-            console.error("Error communicating with the server:", error);
-        }
-        
-        // Save the data to localStorage so core.html can access it
-        localStorage.setItem("finalDataArray", JSON.stringify(dataArray));
-        localStorage.setItem("userData", JSON.stringify(userData));
-
-        // Generate a new chat session for the post-signup chat
-        const newChatId = crypto.randomUUID();
-        localStorage.setItem('chatId', newChatId);
-
-        // Link the new chat to the user's profile
-        try {
-            await fetch('http://localhost:8000/api/link_chat', {
-                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userid: payload.userid, chatid: newChatId })
+                body: JSON.stringify({
+                    userid: userData.ID,
+                    name: userData.Name,
+                    age: userData.Age,
+                    gender: userData.Gender,
+                    location: userData.Location,
+                    "where it come from": fromWhere,
+                    chatid: chatId
+                })
             });
-        } catch (e) {
-            console.error("Error linking new chat:", e);
+            const result = await response.json();
+            if (!response.ok || result.status !== 'success') {
+                throw new Error('Registration failed');
+            }
+            userData["From Where"] = fromWhere;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('finalDataArray', JSON.stringify([
+                userData.ID, userData.Name, userData.Age, userData.Gender, userData.Location, fromWhere
+            ]));
+            localStorage.setItem('registeredChatId', chatId);
+            window.location.href = 'core.html';
+        } catch (error) {
+            errorEl.textContent = 'Your details could not be saved. Please try again before starting the chat.';
+        } finally {
+            saving = false;
+            successBtn.disabled = false;
+            skipBtn.disabled = false;
         }
-
-        // Redirect to core.html
-        window.location.href = "core.html";
     };
-
     if (successBtn) {
         successBtn.addEventListener("click", () => {
             const source = document.getElementById("fromWhere").value;

@@ -17,10 +17,27 @@ ai_agent_path = os.path.join(os.path.dirname(__file__), 'AI agent', 'source')
 if ai_agent_path not in sys.path:
     sys.path.append(ai_agent_path)
 from workflow import get_medical_advice
+from tools.tool import get_file_path
 
 # Define the directory to save the JSON files
 DATASET_DIR = os.path.join(os.path.dirname(__file__), 'dataset')
 os.makedirs(DATASET_DIR, exist_ok=True)
+
+def is_registered_chat(chat_id):
+    """Require a saved, complete profile linked to this chat before calling AI."""
+    for filename in os.listdir(DATASET_DIR):
+        if not filename.endswith('.json'):
+            continue
+        try:
+            with open(os.path.join(DATASET_DIR, filename), encoding='utf-8') as f:
+                profile = json.load(f)
+            if (isinstance(profile, dict)
+                    and chat_id in profile.get('chat_ids', [])
+                    and all(profile.get(field) for field in ('userid', 'name', 'age', 'gender', 'location'))):
+                return True
+        except (OSError, ValueError, TypeError):
+            continue
+    return False
 
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread to prevent blocking."""
@@ -161,11 +178,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 
                 if not message or not session_id:
                     raise ValueError("message and session_id are required")
+
+                file_path = get_file_path(session_id)
+                if not is_registered_chat(session_id):
+                    self.send_response(403)
+                    self.send_header('Content-type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "error": "Please complete signup before chatting.",
+                        "registration_required": True
+                    }).encode('utf-8'))
+                    return
                 
                 # Save context if provided
                 sessions_dir = os.path.join(os.path.dirname(__file__), 'AI agent', 'source', 'tools', 'sessions')
                 os.makedirs(sessions_dir, exist_ok=True)
-                file_path = os.path.join(sessions_dir, f"{session_id}.json")
                 if context:
                     existing_data = {}
                     if os.path.exists(file_path):

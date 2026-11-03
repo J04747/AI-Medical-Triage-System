@@ -71,58 +71,13 @@
     </div>
 
     <script>
-        // 1. Chat with Assistant Button
-        // Function: open chat, demo user sending msg to LLM first to create dataset (prevents chat jumping)
-        document.getElementById('btnChatAssistant').addEventListener('click', async function () {
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph ph-spinner-gap" style="margin-right: 8px; animation: spin 1s linear infinite;"></i> Preparing Chat...';
-            btn.disabled = true;
-
-            try {
-                // Always create a new session for each chat conversation
-                const sessionId = crypto.randomUUID();
-                localStorage.setItem('chatId', sessionId);
-
-                // Fire the init message in the background (don't await — AI can be slow)
-                // The session will be initialized by the time the user types their first message
-                fetch('http://localhost:8000/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: "open the chat", session_id: sessionId })
-                }).catch(e => console.error("Background init error:", e));
-
-                // Link the chat to the user's profile (also background, non-blocking)
-                const storedData = localStorage.getItem("userData");
-                if (storedData) {
-                    try {
-                        const userData = JSON.parse(storedData);
-                        if (userData.ID) {
-                            fetch('http://localhost:8000/api/link_chat', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userid: userData.ID, chatid: sessionId })
-                            }).catch(e => console.error("Background link error:", e));
-                        }
-                    } catch (e) {
-                        console.error("Error parsing userData:", e);
-                    }
-                }
-
-                // Navigate immediately — don't wait for AI to finish
-                window.location.href = 'core.html';
-            } catch (error) {
-                console.error("Error setting up chat:", error);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+        // Registration must finish before a new chat starts.
+        document.getElementById('btnChatAssistant').addEventListener('click', function () {
+            const sessionId = crypto.randomUUID();
+            localStorage.setItem('chatId', sessionId);
+            localStorage.removeItem('registeredChatId');
+            window.location.href = `index.html?chatid=${sessionId}`;
         });
-
-        // Add a small spin animation for the loading icon
-        const style = document.createElement('style');
-        style.innerHTML = '@keyframes spin { 100% { transform: rotate(360deg); } }';
-        document.head.appendChild(style);
-
         // 3. Supervisor Account Button
         // Function: keep one port for supervisor account (different function)
         document.getElementById('btnSupervisor').addEventListener('click', function () {

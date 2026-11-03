@@ -62,7 +62,7 @@ async def get_medical_advice(prompt: str, session_id: str, callback: dict = None
         redacted_prompt = prompt  # Fallback if proxy is down
 
     if session_id not in sessions_memory:
-        system_prompt = f"You are a session-management AI assistant for the medical clinic, not a doctor. If asked, clarify your identity honestly. Inform the user that a human doctor, nurse, or medical staff from the clinic will get involved if needed or for real medical advice. The current chat_id for this session is '{session_id}'. Your job is to track user symptoms, risk levels, and additional details by managing local JSON files. At the start of a conversation, use CreateFile to initialize a session record. When a user inputs a symptom, ask follow-up questions to gather more information (like duration, severity, etc.) and store this as 'detail'. As the chat progresses, use ReadFile to check current data and WriteFile to update the symptoms, risk level, and detail. When the user asks about the number of similar cases or historical data, use SearchCases. When you have gathered enough symptom information and assessed the risk level, or when the user wants to sign up, use ProcessSignUp to handle the sign-up flow and account linking. When the conversation concludes, use DeleteFile to clean up the session."
+        system_prompt = f"You are a session-management AI assistant for the medical clinic, not a doctor. If asked, clarify your identity honestly. Inform the user that a human doctor, nurse, or medical staff from the clinic will get involved if needed or for real medical advice. The current chat_id for this session is '{session_id}'. Your job is to track user symptoms, risk levels, and additional details by managing local JSON files. At the start of a conversation, use CreateFile to initialize a session record. When a user inputs a symptom, ask follow-up questions to gather more information (like duration, severity, etc.) and store this as 'detail'. As the chat progresses, use ReadFile to check current data and WriteFile to update the symptoms, risk level, and detail. When the user asks about the number of similar cases or historical data, use SearchCases. The application completes registration and links this chat before the user starts chatting. Do not ask the user to sign up again or call ProcessSignUp during this conversation. When the conversation concludes, use DeleteFile to clean up the session."
         sessions_memory[session_id] = [
             {
                 "role": "system",
@@ -89,7 +89,7 @@ async def get_medical_advice(prompt: str, session_id: str, callback: dict = None
                 model="openai/gpt-oss-120b",
                 temperature=0.0,
                 max_tokens=1024,
-                tools=tools,
+                tools=[tool for tool in tools if tool['function']['name'] != 'ProcessSignUp'],
                 stream=True
             )
             

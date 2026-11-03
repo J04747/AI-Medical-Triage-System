@@ -92,11 +92,11 @@
                 if (indicator) indicator.remove();
             };
 
-            // Generate or retrieve a session ID
+            // Only enter chat after this session's registration has been saved.
             let sessionId = localStorage.getItem('chatId');
-            if (!sessionId) {
-                sessionId = crypto.randomUUID();
-                localStorage.setItem('chatId', sessionId);
+            if (!sessionId || localStorage.getItem('registeredChatId') !== sessionId) {
+                window.location.replace(sessionId ? `index.html?chatid=${encodeURIComponent(sessionId)}` : 'index.html');
+                return;
             }
 
             // PORT FOR LLM: Function to handle sending message to LLM
@@ -120,8 +120,9 @@
 
                     let aiResponse = data.reply || data.error || "No response received.";
 
-                    if (aiResponse.includes("Redirected user to signup page") || aiResponse.includes("[ACTION_REQUIRED: SIGNUP]")) {
-                        window.location.href = `index.html?chatid=${sessionId}`;
+                    if (data.registration_required) {
+                        localStorage.removeItem('registeredChatId');
+                        window.location.href = `index.html?chatid=${encodeURIComponent(sessionId)}`;
                     } else {
                         appendMessage(aiResponse, "llm");
                     }

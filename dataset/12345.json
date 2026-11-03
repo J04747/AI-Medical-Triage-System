@@ -1,0 +1,12 @@
+{
+    "userid": "12345",
+    "name": "Mock",
+    "age": "21",
+    "gender": "Male",
+    "location": "TRX",
+    "where it come from": "GitHub",
+    "chat_ids": [
+        "efa54f5c-15cf-4655-b157-ca238c3ee645",
+        "e3437154-a3e8-42cc-aa13-99098ba760e5"
+    ]
+}
